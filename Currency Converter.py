@@ -57,9 +57,9 @@ def fetch_historical_rates():
         if not from_currency:
             raise ValueError("Please select a currency to fetch historical rates.")
 
-        # API Request for historical rates
-        api_key = "7dc9395e00960b6a28dcda51"
-        url = f"https://v6.exchangerate-api.com/v6/{api_key}/history/{from_currency}"
+        # Use a different API for historical rates (e.g., Open Exchange Rates)
+        api_key = "YOUR_NEW_API_KEY"  # Replace with your new API key
+        url = f"https://openexchangerates.org/api/historical/2023-01-01.json?app_id={api_key}&base={from_currency}"
         response = requests.get(url)
 
         if response.status_code != 200:
@@ -67,11 +67,60 @@ def fetch_historical_rates():
 
         data = response.json()
         # Display historical rates (simplified for demonstration)
-        messagebox.showinfo("Historical Rates", f"Historical rates for {from_currency}: {data.get('conversion_rates', {})}")
+        rates = data.get("rates", {})
+        messagebox.showinfo("Historical Rates", f"Historical rates for {from_currency} on 2023-01-01: {rates}")
     except ValueError as ve:
         messagebox.showerror("Invalid Input", str(ve))
     except Exception as e:
         messagebox.showerror("Error", f"Something went wrong: {e}")
+
+# Load Conversion History Function
+def load_history():
+    try:
+        with open("conversion_history.txt", "r") as file:
+            history_list.delete(0, tk.END)
+            for line in file:
+                history_list.insert(tk.END, line.strip())
+        messagebox.showinfo("Success", "Conversion history loaded successfully!")
+    except FileNotFoundError:
+        messagebox.showerror("Error", "No saved history found.")
+    except Exception as e:
+        messagebox.showerror("Error", f"Failed to load history: {e}")
+
+# Dark Mode Toggle Function
+def toggle_dark_mode():
+    if root["bg"] == "white":
+        root.config(bg="black")
+        for widget in root.winfo_children():
+            widget.config(bg="black", fg="white")
+    else:
+        root.config(bg="white")
+        for widget in root.winfo_children():
+            widget.config(bg="white", fg="black")
+
+# Save Favorite Pair Function
+def save_favorite_pair():
+    from_currency = combo_from.get()
+    to_currency = combo_to.get()
+    if from_currency and to_currency:
+        favorite_pairs.insert(tk.END, f"{from_currency} -> {to_currency}")
+    else:
+        messagebox.showerror("Error", "Please select both currencies.")
+
+# Load Favorite Pair Function
+def load_favorite_pair(event):
+    try:
+        # Ensure an item is selected
+        selected_index = favorite_pairs.curselection()
+        if not selected_index:
+            return  # No selection, exit the function
+
+        selected_pair = favorite_pairs.get(selected_index)
+        from_currency, to_currency = selected_pair.split(" -> ")
+        combo_from.set(from_currency)
+        combo_to.set(to_currency)
+    except Exception as e:
+        messagebox.showerror("Error", f"Failed to load favorite pair: {e}")
 
 # Currencies list (you can add more if you want)
 currencies = ["USD", "EUR", "GBP", "JPY", "MAD", "CAD", "AUD", "CNY"]
@@ -119,6 +168,21 @@ history_list.pack(pady=5, fill=tk.BOTH, expand=True)
 
 # Historical Rates Button
 tk.Button(root, text="Fetch Historical Rates", command=fetch_historical_rates, bg="#2196F3", fg="white", font=("Arial", 12)).pack(pady=5)
+
+# Add Load History Button
+tk.Button(root, text="Load History", command=load_history, bg="#03A9F4", fg="white", font=("Arial", 12)).pack(pady=5)
+
+# Add Dark Mode Toggle Button
+tk.Button(root, text="Toggle Dark Mode", command=toggle_dark_mode, bg="#607D8B", fg="white", font=("Arial", 12)).pack(pady=5)
+
+# Favorite Pairs List
+tk.Label(root, text="Favorite Pairs:", font=("Arial", 12, "bold")).pack(pady=5)
+favorite_pairs = tk.Listbox(root, height=5, font=("Arial", 10))
+favorite_pairs.pack(pady=5, fill=tk.BOTH, expand=True)
+favorite_pairs.bind("<<ListboxSelect>>", load_favorite_pair)
+
+# Add Save Favorite Pair Button
+tk.Button(root, text="Save Favorite Pair", command=save_favorite_pair, bg="#FF9800", fg="white", font=("Arial", 12)).pack(pady=5)
 
 # Start the GUI
 root.mainloop()
