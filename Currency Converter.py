@@ -122,13 +122,21 @@ def load_favorite_pair(event):
     except Exception as e:
         messagebox.showerror("Error", f"Failed to load favorite pair: {e}")
 
+# Clear All Fields Function
+def clear_all_fields():
+    entry_amount.delete(0, tk.END)
+    combo_from.set("USD")
+    combo_to.set("EUR")
+    label_result.config(text="")
+    history_list.delete(0, tk.END)
+
 # Currencies list (you can add more if you want)
 currencies = ["USD", "EUR", "GBP", "JPY", "MAD", "CAD", "AUD", "CNY"]
 
 # GUI Setup
 root = tk.Tk()
 root.title("Currency Converter")
-root.geometry("500x500")
+root.geometry("500x600")
 root.resizable(True, True)
 
 # Title
@@ -183,6 +191,9 @@ favorite_pairs.bind("<<ListboxSelect>>", load_favorite_pair)
 
 # Add Save Favorite Pair Button
 tk.Button(root, text="Save Favorite Pair", command=save_favorite_pair, bg="#FF9800", fg="white", font=("Arial", 12)).pack(pady=5)
+
+# Add Clear All Fields Button
+tk.Button(root, text="Clear All Fields", command=clear_all_fields, bg="#FF5722", fg="white", font=("Arial", 12)).pack(pady=5)
 
 # Start the GUI
 root.mainloop()
